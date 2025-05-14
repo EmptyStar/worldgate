@@ -273,7 +273,7 @@ minetest.register_on_generated(function(minp,maxp,blockseed)
       end
     end
 
-    -- Write the gate's position to the beacon's node meta for linking purposes
+    -- Write the gate's position to the beacon's node meta for linking purposes if possible
     local beacon = (function()
       for dy = 2, 0, -1 do
         local beacon_location = location:add(vn(0,dy,0))
@@ -283,11 +283,16 @@ minetest.register_on_generated(function(minp,maxp,blockseed)
         end
       end
     end)()
-    local nodemeta = minetest.get_meta(beacon)
-    nodemeta:set_string("worldgate:source",minetest.pos_to_string(gate.position))
-    if gate.destination then
-      nodemeta:set_string("worldgate:destination",minetest.pos_to_string(gate.destination))
-      minetest.swap_node(beacon,{ name = "telemosaic:beacon", param2 = 0 })
+
+    if beacon then
+      local nodemeta = minetest.get_meta(beacon)
+      nodemeta:set_string("worldgate:source",minetest.pos_to_string(gate.position))
+      if gate.destination then
+        nodemeta:set_string("worldgate:destination",minetest.pos_to_string(gate.destination))
+        minetest.swap_node(beacon,{ name = "telemosaic:beacon", param2 = 0 })
+      end
+    else
+      minetest.log("warning","Unable to set beacon node meta for worldgate at " .. minetest.pos_to_string(location))
     end
 
     -- Fix lighting
